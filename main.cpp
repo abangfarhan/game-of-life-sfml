@@ -16,16 +16,22 @@ int wrapValue(int v, int vMax)
 
 int main()
 {
-    const int DELAY = 0;
+    const int DELAY = 100;
     const int CELL_SIZE = 30;
+    const sf::Vector2f CELL_VECTOR = sf::Vector2f(CELL_SIZE, CELL_SIZE);
     const int GRID_WIDTH = 30;
     const int GRID_HEIGHT = 20;
     const int N_CELLS = GRID_WIDTH * GRID_HEIGHT;
-    int grid[N_CELLS];
+    int grid[N_CELLS] = {  };
     int gridNext[N_CELLS];
     srand(time(NULL));
-    for (int i = 0; i < N_CELLS; i++)
-        grid[i] = (double(rand())/RAND_MAX < 0.1) ? 1 : 0;
+    // for (int i = 0; i < N_CELLS; i++)
+    //     grid[i] = (double(rand())/RAND_MAX < 0.1) ? 1 : 0;
+    grid[0 + 0 * GRID_WIDTH] = 1;
+    grid[1 + 1 * GRID_WIDTH] = 1;
+    grid[2 + 1 * GRID_WIDTH] = 1;
+    grid[0 + 2 * GRID_WIDTH] = 1;
+    grid[1 + 2 * GRID_WIDTH] = 1;
 
     sf::RenderWindow window(sf::VideoMode(CELL_SIZE*GRID_WIDTH, CELL_SIZE*GRID_HEIGHT), "SFML Window");
     while (window.isOpen())
@@ -48,7 +54,7 @@ int main()
                 // draw cell
                 sf::RectangleShape cell;
                 cell.setPosition(x * CELL_SIZE, y * CELL_SIZE);
-                cell.setSize(sf::Vector2f(CELL_SIZE, CELL_SIZE)); // TODO: can Vector2f be made into a variable?
+                cell.setSize(CELL_VECTOR);
                 cell.setOutlineThickness(1);
                 cell.setOutlineColor(GRAY);
                 if (grid[x + y * GRID_WIDTH] == 1)
