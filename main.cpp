@@ -23,8 +23,9 @@ int main()
     const int N_CELLS = GRID_WIDTH * GRID_HEIGHT;
     int grid[N_CELLS];
     int gridNext[N_CELLS];
+    srand(time(NULL));
     for (int i = 0; i < N_CELLS; i++)
-        grid[i] = (double(rand())/RAND_MAX < 0.3) ? 1 : 0;
+        grid[i] = (double(rand())/RAND_MAX < 0.1) ? 1 : 0;
 
     sf::RenderWindow window(sf::VideoMode(CELL_SIZE*GRID_WIDTH, CELL_SIZE*GRID_HEIGHT), "SFML Window");
     while (window.isOpen())
