@@ -5,7 +5,6 @@
 #define WHITE sf::Color::White
 #define BLACK sf::Color::Black
 #define GRAY sf::Color(153, 153, 153)
-#define PAUSE_KEY sf::Keyboard::P
 
 int wrapValue(int v, int vMax)
 {
@@ -17,26 +16,51 @@ int wrapValue(int v, int vMax)
 
 int main()
 {
-    const int DELAY = 100;
     const int CELL_SIZE = 30;
-    const sf::Vector2f CELL_VECTOR = sf::Vector2f(CELL_SIZE, CELL_SIZE);
+    const sf::Vector2f CELL_VECTOR(CELL_SIZE, CELL_SIZE);
     const int GRID_WIDTH = 30;
     const int GRID_HEIGHT = 20;
     const int N_CELLS = GRID_WIDTH * GRID_HEIGHT;
     int grid[N_CELLS] = {  };
     int gridNext[N_CELLS];
     srand(time(NULL));
-    // for (int i = 0; i < N_CELLS; i++)
-    //     grid[i] = (double(rand())/RAND_MAX < 0.1) ? 1 : 0;
-    grid[0 + 0 * GRID_WIDTH] = 1;
-    grid[1 + 1 * GRID_WIDTH] = 1;
-    grid[2 + 1 * GRID_WIDTH] = 1;
-    grid[0 + 2 * GRID_WIDTH] = 1;
-    grid[1 + 2 * GRID_WIDTH] = 1;
+    for (int i = 0; i < N_CELLS; i++)
+        grid[i] = (double(rand())/RAND_MAX < 0.1) ? 1 : 0;
+    // grid[0 + 0 * GRID_WIDTH] = 1;
+    // grid[1 + 1 * GRID_WIDTH] = 1;
+    // grid[2 + 1 * GRID_WIDTH] = 1;
+    // grid[0 + 2 * GRID_WIDTH] = 1;
+    // grid[1 + 2 * GRID_WIDTH] = 1;
+
+    const int DELAY_INC = 50;
+    int delay = 100;
 
     bool isPlaying = true;
 
-    sf::RenderWindow window(sf::VideoMode(CELL_SIZE*GRID_WIDTH, CELL_SIZE*GRID_HEIGHT), "SFML Window");
+    sf::Font font;
+    font.loadFromFile("./fonts/arial.ttf");
+
+    sf::Text textPause("Press 'p' to pause.", font);
+    textPause.setCharacterSize(15);
+    textPause.setPosition(10, CELL_SIZE * GRID_HEIGHT + 5);
+    textPause.setFillColor(BLACK);
+
+    sf::Text textPlay("Press 'p' to play.", font);
+    textPlay.setCharacterSize(15);
+    textPlay.setPosition(10, CELL_SIZE * GRID_HEIGHT + 5);
+    textPlay.setFillColor(BLACK);
+
+    sf::Text textToggle("Click on cell to toggle live/dead cell.", font);
+    textToggle.setCharacterSize(15);
+    textToggle.setPosition(10, CELL_SIZE * GRID_HEIGHT + 25);
+    textToggle.setFillColor(BLACK);
+
+    sf::Text textSpeed("Use left/right arrow keys to change speed.", font);
+    textSpeed.setCharacterSize(15);
+    textSpeed.setPosition(300, CELL_SIZE * GRID_HEIGHT + 5);
+    textSpeed.setFillColor(BLACK);
+
+    sf::RenderWindow window(sf::VideoMode(CELL_SIZE * GRID_WIDTH, CELL_SIZE * GRID_HEIGHT + 50), "Game of Life");
     while (window.isOpen())
     {
         sf::Event event;
@@ -48,15 +72,20 @@ int main()
                 window.close();
                 break;
             case sf::Event::KeyPressed:
-                if (event.key.code == PAUSE_KEY)
+                if (event.key.code == sf::Keyboard::P)
                     isPlaying = !isPlaying;
+                else if (event.key.code == sf::Keyboard::Right)
+                    delay = std::max(delay - DELAY_INC, 0); // prevent negative value
+                else if (event.key.code == sf::Keyboard::Left)
+                    delay += DELAY_INC;
                 break;
             case sf::Event::MouseButtonPressed:
                 if (!isPlaying && event.mouseButton.button == sf::Mouse::Left)
                 {
                     int x = double(event.mouseButton.x)/CELL_SIZE;
                     int y = double(event.mouseButton.y)/CELL_SIZE;
-                    grid[x + y * GRID_WIDTH] = !grid[x + y * GRID_WIDTH];
+                    if (x >= 0 && x < GRID_WIDTH && y >= 0 && y < GRID_HEIGHT)
+                        grid[x + y * GRID_WIDTH] = !grid[x + y * GRID_WIDTH];
                 }
                 break;
             }
@@ -108,7 +137,17 @@ int main()
             for (int i = 0; i < N_CELLS; i++)
                 grid[i] = gridNext[i];
 
+        // Additional info
+        window.draw(textSpeed);
+        if (isPlaying)
+            window.draw(textPause);
+        else
+        {
+            window.draw(textPlay);
+            window.draw(textToggle);
+        }
+
         window.display();
-        sf::sleep(sf::milliseconds(DELAY));
+        sf::sleep(sf::milliseconds(delay));
     }
 }
