@@ -5,6 +5,7 @@
 #define WHITE sf::Color::White
 #define BLACK sf::Color::Black
 #define GRAY sf::Color(153, 153, 153)
+#define PAUSE_KEY sf::Keyboard::P
 
 int wrapValue(int v, int vMax)
 {
@@ -33,15 +34,31 @@ int main()
     grid[0 + 2 * GRID_WIDTH] = 1;
     grid[1 + 2 * GRID_WIDTH] = 1;
 
+    bool isPlaying = true;
+
     sf::RenderWindow window(sf::VideoMode(CELL_SIZE*GRID_WIDTH, CELL_SIZE*GRID_HEIGHT), "SFML Window");
     while (window.isOpen())
     {
         sf::Event event;
         while (window.pollEvent(event))
         {
-            if (event.type == sf::Event::Closed)
+            switch (event.type)
             {
+            case sf::Event::Closed:
                 window.close();
+                break;
+            case sf::Event::KeyPressed:
+                if (event.key.code == PAUSE_KEY)
+                    isPlaying = !isPlaying;
+                break;
+            case sf::Event::MouseButtonPressed:
+                if (!isPlaying && event.mouseButton.button == sf::Mouse::Left)
+                {
+                    int x = double(event.mouseButton.x)/CELL_SIZE;
+                    int y = double(event.mouseButton.y)/CELL_SIZE;
+                    grid[x + y * GRID_WIDTH] = !grid[x + y * GRID_WIDTH];
+                }
+                break;
             }
         }
 
@@ -64,28 +81,32 @@ int main()
                 window.draw(cell);
 
                 // prepare gridNext
-                int neighborSum = 0;
-                for (int i = -1; i < 2; i++)
-                    for (int j = -1; j < 2; j++)
-                    {
-                        int xi = wrapValue(x + i, GRID_WIDTH);
-                        int yj = wrapValue(y + j, GRID_HEIGHT);
-                        neighborSum += grid[xi + yj * GRID_WIDTH];
-                    }
+                if (isPlaying)
+                {
+                    int neighborSum = 0;
+                    for (int i = -1; i < 2; i++)
+                        for (int j = -1; j < 2; j++)
+                        {
+                            int xi = wrapValue(x + i, GRID_WIDTH);
+                            int yj = wrapValue(y + j, GRID_HEIGHT);
+                            neighborSum += grid[xi + yj * GRID_WIDTH];
+                        }
 
-                int current = x + y * GRID_WIDTH;
-                neighborSum -= grid[current];
-                gridNext[current] = grid[current];
-                if (grid[current] == 1 && (neighborSum < 2 || neighborSum > 3))
-                    gridNext[current] = 0;
-                else if (neighborSum == 3)
-                    gridNext[current] = 1;
+                    int current = x + y * GRID_WIDTH;
+                    neighborSum -= grid[current];
+                    gridNext[current] = grid[current];
+                    if (grid[current] == 1 && (neighborSum < 2 || neighborSum > 3))
+                        gridNext[current] = 0;
+                    else if (neighborSum == 3)
+                        gridNext[current] = 1;
+                }
             }
         }
 
         // move gridNext to grid
-        for (int i = 0; i < N_CELLS; i++)
-            grid[i] = gridNext[i];
+        if (isPlaying)
+            for (int i = 0; i < N_CELLS; i++)
+                grid[i] = gridNext[i];
 
         window.display();
         sf::sleep(sf::milliseconds(DELAY));
