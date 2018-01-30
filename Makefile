@@ -11,5 +11,5 @@ SFML = -DSFML_STATIC -I "D:/Program Files (x86)/SFML/include" \
 	-l freetype \
 	-l jpeg \
 
-main: main.cpp
-	$(CXX) $(CXXFLAGS) -o main main.cpp $(SFML)
+%: %.cpp
+	$(CXX) $(CXXFLAGS) -o $@ $< $(SFML)
